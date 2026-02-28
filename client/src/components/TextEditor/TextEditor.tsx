@@ -6,14 +6,21 @@ import { useDebouncedValue } from "../../hooks/useDebouncedValue";
 type TextEditorProps = {
   primitive: TextPrimitive;
   isSelected: boolean;
+  transform: { scale: number; offsetX: number; offsetY: number };
   onChange: (id: string, changes: Partial<TextPrimitive>) => void;
   onCommit: (id: string) => void;
 };
 
-export const TextEditor = ({ primitive, isSelected, onChange, onCommit }: TextEditorProps) => {
+export const TextEditor = ({ primitive, isSelected, transform, onChange, onCommit }: TextEditorProps) => {
   const [value, setValue] = useState(primitive.text);
   const debouncedValue = useDebouncedValue(value, 250);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+
+  const scale = transform.scale;
+  const left = primitive.x * scale + transform.offsetX;
+  const top = primitive.y * scale + transform.offsetY;
+  const width = primitive.width * scale;
+  const height = primitive.height * scale;
 
   useEffect(() => {
     setValue(primitive.text);
@@ -74,9 +81,9 @@ export const TextEditor = ({ primitive, isSelected, onChange, onCommit }: TextEd
     <div
       className={styles.wrapper}
       style={{
-        transform: `translate(${primitive.x}px, ${primitive.y}px) rotate(${primitive.rotation ?? 0}rad)`,
-        width: primitive.width,
-        height: primitive.height,
+        transform: `translate(${left}px, ${top}px) rotate(${primitive.rotation ?? 0}rad)`,
+        width,
+        height,
       }}
     >
       <textarea

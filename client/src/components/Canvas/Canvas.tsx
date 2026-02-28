@@ -99,6 +99,7 @@ export const Canvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimitive
           key={primitive.id}
           primitive={primitive}
           isSelected={selectedTextId === primitive.id}
+          transform={transform}
           onChange={onUpdatePrimitive}
           onCommit={(id) => {
             setSelectedTextId(null);
