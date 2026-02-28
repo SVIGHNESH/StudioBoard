@@ -1,0 +1,14 @@
+.hint {
+  position: absolute;
+  bottom: 92px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 14px;
+  border-radius: 14px;
+  background: rgba(26, 26, 26, 0.85);
+  color: white;
+  font-size: 12px;
+  letter-spacing: 0.2px;
+  box-shadow: var(--shadow-tight);
+  z-index: 10;
+}

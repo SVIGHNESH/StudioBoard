@@ -1,0 +1,52 @@
+.overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 9;
+}
+
+.outline {
+  position: absolute;
+  border: 1.5px dashed rgba(232, 93, 61, 0.7);
+  pointer-events: none;
+}
+
+.ellipse {
+  border-radius: 999px;
+}
+
+.handle {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: #ffffff;
+  border: 1px solid rgba(232, 93, 61, 0.8);
+  border-radius: 2px;
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: nwse-resize;
+}
+
+.rotate {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9);
+  transform: translate(-50%, -50%);
+  pointer-events: auto;
+  cursor: grab;
+}
+
+.svg {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.line {
+  stroke: rgba(232, 93, 61, 0.7);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 4;
+}

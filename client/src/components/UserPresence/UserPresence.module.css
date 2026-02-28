@@ -1,0 +1,32 @@
+.panel {
+  position: absolute;
+  top: 24px;
+  right: 24px;
+  background: var(--bg-surface);
+  border-radius: var(--radius-panel);
+  box-shadow: var(--shadow-tight);
+  padding: 16px 18px;
+  min-width: 220px;
+  z-index: 10;
+}
+
+.title {
+  font-family: "DM Serif Display", serif;
+  font-size: 18px;
+  margin: 0 0 10px;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
