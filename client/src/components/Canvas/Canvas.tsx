@@ -94,19 +94,22 @@ export const Canvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimitive
         onPointerLeave={(event) => handlePointerUp(event)}
         onWheel={handleWheel}
       />
-      {textPrimitives.map((primitive) => (
-        <TextEditor
-          key={primitive.id}
-          primitive={primitive}
-          isSelected={selectedTextId === primitive.id}
-          transform={transform}
-          onChange={onUpdatePrimitive}
-          onCommit={(id) => {
-            setSelectedTextId(null);
-            onUpdatePrimitive(id, {});
-          }}
-        />
-      ))}
+      {selectedTextId &&
+        textPrimitives
+          .filter((primitive) => primitive.id === selectedTextId)
+          .map((primitive) => (
+            <TextEditor
+              key={primitive.id}
+              primitive={primitive}
+              isSelected={true}
+              transform={transform}
+              onChange={onUpdatePrimitive}
+              onCommit={(id) => {
+                setSelectedTextId(null);
+                onUpdatePrimitive(id, {});
+              }}
+            />
+          ))}
       {selectedPrimitive && activeTool === "select" && (
         <SelectionOverlay primitive={selectedPrimitive} transform={transform} onUpdate={onUpdatePrimitive} />
       )}

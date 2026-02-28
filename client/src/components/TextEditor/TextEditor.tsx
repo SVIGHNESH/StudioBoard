@@ -13,6 +13,7 @@ type TextEditorProps = {
 
 export const TextEditor = ({ primitive, isSelected, transform, onChange, onCommit }: TextEditorProps) => {
   const [value, setValue] = useState(primitive.text);
+  const [isEditing, setIsEditing] = useState(false);
   const debouncedValue = useDebouncedValue(value, 250);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
 
@@ -23,16 +24,25 @@ export const TextEditor = ({ primitive, isSelected, transform, onChange, onCommi
   const height = primitive.height * scale;
 
   useEffect(() => {
-    setValue(primitive.text);
-  }, [primitive.text]);
+    if (!isEditing) {
+      setValue(primitive.text);
+    }
+  }, [isEditing, primitive.text]);
 
   useEffect(() => {
+    if (isSelected) {
+      setIsEditing(true);
+    }
+  }, [isSelected]);
+
+  useEffect(() => {
+    if (!isEditing) return;
     if (debouncedValue !== primitive.text) {
       onChange(primitive.id, {
         text: debouncedValue,
       });
     }
-  }, [debouncedValue, onChange, primitive.id, primitive.text]);
+  }, [debouncedValue, isEditing, onChange, primitive.id, primitive.text]);
 
   useEffect(() => {
     if (isSelected) {
@@ -41,6 +51,11 @@ export const TextEditor = ({ primitive, isSelected, transform, onChange, onCommi
   }, [isSelected]);
 
   const handleBlur = () => {
+    if (!isSelected) return;
+    setIsEditing(false);
+    if (value !== primitive.text) {
+      onChange(primitive.id, { text: value });
+    }
     onCommit(primitive.id);
   };
 
@@ -52,8 +67,8 @@ export const TextEditor = ({ primitive, isSelected, transform, onChange, onCommi
     const startHeight = primitive.height;
 
     const onMove = (moveEvent: PointerEvent) => {
-      const dx = moveEvent.clientX - startX;
-      const dy = moveEvent.clientY - startY;
+      const dx = (moveEvent.clientX - startX) / scale;
+      const dy = (moveEvent.clientY - startY) / scale;
       const nextWidth = Math.max(120, startWidth + (corner.includes("right") ? dx : -dx));
       const nextHeight = Math.max(40, startHeight + (corner.includes("bottom") ? dy : -dy));
       const nextX = corner.includes("left") ? primitive.x + dx : primitive.x;
@@ -77,11 +92,21 @@ export const TextEditor = ({ primitive, isSelected, transform, onChange, onCommi
     window.addEventListener("pointerup", onUp);
   };
 
+  const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    const value = event.target.value;
+    const minWidth = 120;
+    const minHeight = 40;
+    const nextWidth = Math.max(minWidth, event.target.scrollWidth / scale);
+    const nextHeight = Math.max(minHeight, event.target.scrollHeight / scale);
+    onChange(primitive.id, { width: nextWidth, height: nextHeight });
+  };
+
   return (
     <div
       className={styles.wrapper}
       style={{
         transform: `translate(${left}px, ${top}px) rotate(${primitive.rotation ?? 0}rad)`,
+        transformOrigin: "top left",
         width,
         height,
       }}
@@ -97,10 +122,12 @@ export const TextEditor = ({ primitive, isSelected, transform, onChange, onCommi
             height: Math.max(40, primitive.height),
           });
         }}
+        onInput={handleInput}
+        onFocus={() => setIsEditing(true)}
         onBlur={handleBlur}
         onMouseDown={(event) => event.stopPropagation()}
         style={{
-          fontSize: `${primitive.fontSize}px`,
+          fontSize: `${primitive.fontSize * scale}px`,
           fontFamily: primitive.fontFamily,
           color: primitive.color,
           textAlign: primitive.align,

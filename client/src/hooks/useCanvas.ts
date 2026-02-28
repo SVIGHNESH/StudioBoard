@@ -67,11 +67,14 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    renderScene(ctx, primitives, transform);
+    const primitivesForRender = selectedTextId
+      ? primitives.filter((primitive) => !(primitive.type === "text" && primitive.id === selectedTextId))
+      : primitives;
+    renderScene(ctx, primitivesForRender, transform);
     if (draftPrimitive) {
       renderScene(ctx, [draftPrimitive], transform);
     }
-  }, [primitives, transform, draftPrimitive]);
+  }, [primitives, transform, draftPrimitive, selectedTextId]);
 
   const handleResize = useCallback(() => {
     const canvas = canvasRef.current;
@@ -131,6 +134,10 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
 
     const point = toCanvasPoint(event.clientX, event.clientY);
 
+    if (selectedTextId && activeTool !== "text" && activeTool !== "select") {
+      setSelectedTextId(null);
+    }
+
     if (activeTool === "select") {
       const hit = [...primitives].reverse().find((primitive) => hitTestPrimitive(primitive, point.x, point.y));
       if (hit) {
@@ -163,6 +170,33 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
         setLastEraseId(hit.id);
       }
       setIsDrawing(true);
+      return;
+    }
+
+    if (activeTool === "text") {
+      if (selectedTextId) {
+        setSelectedTextId(null);
+        return;
+      }
+      const primitive: TextPrimitive = {
+        id: createId(),
+        type: "text",
+        x: point.x,
+        y: point.y,
+        width: 180,
+        height: 40,
+        text: "",
+        fontSize: 18,
+        fontFamily: "IBM Plex Sans",
+        color: strokeColor,
+        align: "left",
+        rotation: 0,
+        createdBy: sessionId,
+      };
+      onCreatePrimitive(primitive);
+      setSelectedTextId(primitive.id);
+      setIsDrawing(false);
+      setDraftPrimitive(null);
       return;
     }
 
@@ -233,24 +267,6 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
       });
     }
 
-    if (activeTool === "text") {
-      const primitive: TextPrimitive = {
-        id: createId(),
-        type: "text",
-        x: point.x,
-        y: point.y,
-        width: 180,
-        height: 40,
-        text: "New text",
-        fontSize: 18,
-        fontFamily: "IBM Plex Sans",
-        color: strokeColor,
-        align: "left",
-        rotation: 0,
-        createdBy: sessionId,
-      };
-      setDraftPrimitive(primitive);
-    }
   };
 
   const throttledCursor = useThrottle(onCursorMove, 120);
@@ -329,8 +345,6 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
       return;
     }
 
-    if (!isDrawing || !draftPrimitive) return;
-
     if (activeTool === "eraser") {
       const hit = [...primitives].reverse().find((primitive) => hitTestPrimitive(primitive, point.x, point.y));
       if (hit && hit.id !== lastEraseId) {
@@ -339,6 +353,8 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
       }
       return;
     }
+
+    if (!isDrawing || !draftPrimitive) return;
 
     if (draftPrimitive.type === "pen") {
       const last = draftPrimitive.points[draftPrimitive.points.length - 1];
@@ -410,17 +426,13 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
 
     if (draftPrimitive) {
       if (draftPrimitive.type === "text") {
-        const textDraft = draftPrimitive as TextPrimitive;
-        onCreatePrimitive(textDraft);
-        setSelectedTextId(textDraft.id);
-      } else {
-        onCreatePrimitive(draftPrimitive);
+        return;
       }
+      onCreatePrimitive(draftPrimitive);
+      setDraftPrimitive(null);
+      setIsDrawing(false);
+      setLastEraseId(null);
     }
-
-    setDraftPrimitive(null);
-    setIsDrawing(false);
-    setLastEraseId(null);
   };
 
   const handleWheel = (event: React.WheelEvent<HTMLCanvasElement>) => {

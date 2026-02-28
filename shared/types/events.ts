@@ -14,6 +14,7 @@ export type BoardSyncPayload = {
 export type PrimitiveUpdatePayload = {
   id: string;
   changes: Partial<Primitive>;
+  sessionId?: string;
 };
 
 export type PrimitiveDeletePayload = {

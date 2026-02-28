@@ -33,6 +33,7 @@ const toolIcons: Record<ToolType, string> = {
 export const Toolbar = ({ onUndo, onRedo, onExport }: ToolbarProps) => {
   const { activeTool, setActiveTool, strokeColor, setStrokeColor } = useToolStore();
   const colors = ["#2C2926", "#E85D3D", "#1976D2", "#2E7D32", "#F6B24B", "#7B1FA2", "#6D4C41", "#00897B"];
+  const isCustomColor = !colors.includes(strokeColor);
 
   return (
     <div className={styles.toolbar}>
@@ -70,6 +71,18 @@ export const Toolbar = ({ onUndo, onRedo, onExport }: ToolbarProps) => {
             style={{ backgroundColor: color }}
           />
         ))}
+        <label
+          className={styles.colorPicker}
+          data-active={isCustomColor}
+          aria-label="Custom color"
+        >
+          <input
+            type="color"
+            value={strokeColor}
+            onChange={(event) => setStrokeColor(event.target.value)}
+            aria-label="Choose custom color"
+          />
+        </label>
       </div>
       <div className={styles.divider} />
       <div className={styles.group}>

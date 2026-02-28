@@ -40,6 +40,9 @@ export const useSocket = (boardId: string) => {
     });
 
     socket.on(SOCKET_EVENTS.PRIMITIVE_UPDATED, (payload: PrimitiveUpdatePayload) => {
+      if (payload.sessionId && payload.sessionId === sessionId) {
+        return;
+      }
       updatePrimitive(payload.id, payload.changes);
     });
 
@@ -77,7 +80,8 @@ export const useSocket = (boardId: string) => {
   };
 
   const emitPrimitiveUpdate = (payload: PrimitiveUpdatePayload) => {
-    socket.emit(SOCKET_EVENTS.PRIMITIVE_UPDATE, payload);
+    updatePrimitive(payload.id, payload.changes);
+    socket.emit(SOCKET_EVENTS.PRIMITIVE_UPDATE, { ...payload, sessionId });
   };
 
   const emitPrimitiveDelete = (payload: PrimitiveDeletePayload) => {
