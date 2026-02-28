@@ -178,11 +178,8 @@ export const registerSocketHandlers = (io: Server) => {
       if (existing) {
         existing.deleted_at = null;
         primitivesMap.set(primitiveId, existing);
+        io.to(boardId).emit(SOCKET_EVENTS.PRIMITIVE_CREATED, existing);
       }
-      io.to(boardId).emit(SOCKET_EVENTS.PRIMITIVE_UPDATED, {
-        id: primitiveId,
-        changes: { deleted_at: null },
-      });
       io.to(boardId).emit("redo:applied", { primitiveId, action: "restore" });
     });
 

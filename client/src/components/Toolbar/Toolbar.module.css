@@ -12,6 +12,9 @@
   box-shadow: var(--shadow-soft);
   color: white;
   z-index: 10;
+  max-width: calc(100% - 24px);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .group {
@@ -37,6 +40,8 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  min-width: 44px;
+  min-height: 44px;
 }
 
 .toolbar button:hover {
@@ -56,4 +61,24 @@
 
 .label {
   font-size: 12px;
+}
+
+@media (max-width: 820px) {
+  .toolbar {
+    bottom: 16px;
+    padding: 10px 14px;
+    gap: 10px;
+  }
+
+  .group {
+    gap: 4px;
+  }
+
+  .toolbar button {
+    padding: 8px;
+  }
+
+  .label {
+    display: none;
+  }
 }

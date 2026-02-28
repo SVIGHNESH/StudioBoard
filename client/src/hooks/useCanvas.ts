@@ -43,6 +43,14 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const lastPointer = useRef<{ x: number; y: number } | null>(null);
+  const activePointers = useRef(new Map<number, { x: number; y: number }>());
+  const pinchState = useRef<{
+    startDistance: number;
+    startScale: number;
+    startOffsetX: number;
+    startOffsetY: number;
+    startMidpoint: { x: number; y: number };
+  } | null>(null);
 
   const toCanvasPoint = (clientX: number, clientY: number) => {
     const rect = canvasRef.current?.getBoundingClientRect();
@@ -90,6 +98,30 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
 
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     event.currentTarget.setPointerCapture(event.pointerId);
+    if (event.pointerType === "touch") {
+      activePointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (activePointers.current.size === 2) {
+        const [p1, p2] = Array.from(activePointers.current.values());
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        pinchState.current = {
+          startDistance: Math.hypot(dx, dy),
+          startScale: transform.scale,
+          startOffsetX: transform.offsetX,
+          startOffsetY: transform.offsetY,
+          startMidpoint: { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 },
+        };
+        setIsPanning(true);
+        setIsDrawing(false);
+        setDraftPrimitive(null);
+        return;
+      }
+      if (activeTool === "select") {
+        setIsPanning(true);
+        lastPointer.current = { x: event.clientX, y: event.clientY };
+        return;
+      }
+    }
     if (event.button === 1 || event.shiftKey || event.metaKey || event.ctrlKey || event.altKey) {
       setIsPanning(true);
       lastPointer.current = { x: event.clientX, y: event.clientY };
@@ -218,9 +250,31 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
     }
   };
 
-  const throttledCursor = useThrottle(onCursorMove, 80);
+  const throttledCursor = useThrottle(onCursorMove, 120);
 
   const handlePointerMove = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    if (event.pointerType === "touch") {
+      event.preventDefault();
+    }
+    if (event.pointerType === "touch") {
+      activePointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
+      if (activePointers.current.size >= 2 && pinchState.current) {
+        const [p1, p2] = Array.from(activePointers.current.values());
+        const midpoint = { x: (p1.x + p2.x) / 2, y: (p1.y + p2.y) / 2 };
+        const dx = p2.x - p1.x;
+        const dy = p2.y - p1.y;
+        const scale = Math.min(
+          5,
+          Math.max(0.2, pinchState.current.startScale * (Math.hypot(dx, dy) / pinchState.current.startDistance))
+        );
+        const originX = (pinchState.current.startMidpoint.x - pinchState.current.startOffsetX) / pinchState.current.startScale;
+        const originY = (pinchState.current.startMidpoint.y - pinchState.current.startOffsetY) / pinchState.current.startScale;
+        const nextOffsetX = midpoint.x - originX * scale;
+        const nextOffsetY = midpoint.y - originY * scale;
+        setTransform({ scale, offsetX: nextOffsetX, offsetY: nextOffsetY });
+        return;
+      }
+    }
     const point = toCanvasPoint(event.clientX, event.clientY);
     throttledCursor(point.x, point.y);
 
@@ -319,6 +373,13 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
   const handlePointerUp = (event?: React.PointerEvent<HTMLCanvasElement>) => {
     if (event) {
       event.currentTarget.releasePointerCapture(event.pointerId);
+      if (event.pointerType === "touch") {
+        activePointers.current.delete(event.pointerId);
+        if (activePointers.current.size < 2) {
+          pinchState.current = null;
+          setIsPanning(false);
+        }
+      }
     }
     if (isPanning) {
       setIsPanning(false);

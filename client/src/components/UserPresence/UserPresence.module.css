@@ -8,6 +8,7 @@
   padding: 16px 18px;
   min-width: 220px;
   z-index: 10;
+  max-width: calc(100% - 24px);
 }
 
 .title {
@@ -23,6 +24,19 @@
   margin-bottom: 8px;
   color: var(--text-secondary);
   font-size: 14px;
+}
+
+@media (max-width: 820px) {
+  .panel {
+    top: 12px;
+    right: 12px;
+    padding: 12px 14px;
+    min-width: 160px;
+  }
+
+  .title {
+    font-size: 16px;
+  }
 }
 
 .dot {

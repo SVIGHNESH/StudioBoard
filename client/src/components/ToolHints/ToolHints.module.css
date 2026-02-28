@@ -12,3 +12,10 @@
   box-shadow: var(--shadow-tight);
   z-index: 10;
 }
+
+@media (max-width: 820px) {
+  .hint {
+    bottom: 74px;
+    font-size: 11px;
+  }
+}
