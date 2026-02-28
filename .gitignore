@@ -1,6 +1,6 @@
 # Dependencies
 node_modules/
-
+Plan.md
 # Environment files
 .env
 .env.local
