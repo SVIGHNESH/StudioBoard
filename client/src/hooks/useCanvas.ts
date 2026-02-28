@@ -42,6 +42,7 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
   const [dragTextId, setDragTextId] = useState<string | null>(null);
   const [dragOffset, setDragOffset] = useState<{ x: number; y: number } | null>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [lastEraseId, setLastEraseId] = useState<string | null>(null);
   const lastPointer = useRef<{ x: number; y: number } | null>(null);
   const activePointers = useRef(new Map<number, { x: number; y: number }>());
   const pinchState = useRef<{
@@ -159,7 +160,9 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
       const hit = [...primitives].reverse().find((primitive) => hitTestPrimitive(primitive, point.x, point.y));
       if (hit) {
         onDeletePrimitive(hit.id);
+        setLastEraseId(hit.id);
       }
+      setIsDrawing(true);
       return;
     }
 
@@ -328,6 +331,15 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
 
     if (!isDrawing || !draftPrimitive) return;
 
+    if (activeTool === "eraser") {
+      const hit = [...primitives].reverse().find((primitive) => hitTestPrimitive(primitive, point.x, point.y));
+      if (hit && hit.id !== lastEraseId) {
+        onDeletePrimitive(hit.id);
+        setLastEraseId(hit.id);
+      }
+      return;
+    }
+
     if (draftPrimitive.type === "pen") {
       const last = draftPrimitive.points[draftPrimitive.points.length - 1];
       if (last && Math.hypot(point.x - last.x, point.y - last.y) < 1.5) {
@@ -408,6 +420,7 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
 
     setDraftPrimitive(null);
     setIsDrawing(false);
+    setLastEraseId(null);
   };
 
   const handleWheel = (event: React.WheelEvent<HTMLCanvasElement>) => {

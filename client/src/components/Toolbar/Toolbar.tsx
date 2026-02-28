@@ -31,7 +31,8 @@ const toolIcons: Record<ToolType, string> = {
 };
 
 export const Toolbar = ({ onUndo, onRedo, onExport }: ToolbarProps) => {
-  const { activeTool, setActiveTool } = useToolStore();
+  const { activeTool, setActiveTool, strokeColor, setStrokeColor } = useToolStore();
+  const colors = ["#2C2926", "#E85D3D", "#1976D2", "#2E7D32", "#F6B24B", "#7B1FA2", "#6D4C41", "#00897B"];
 
   return (
     <div className={styles.toolbar}>
@@ -55,6 +56,19 @@ export const Toolbar = ({ onUndo, onRedo, onExport }: ToolbarProps) => {
             <span className={styles.icon}>{toolIcons[tool.id]}</span>
             <span className={styles.label}>{tool.label}</span>
           </button>
+        ))}
+      </div>
+      <div className={styles.divider} />
+      <div className={styles.group} aria-label="Colors">
+        {colors.map((color) => (
+          <button
+            key={color}
+            className={styles.color}
+            data-active={strokeColor === color}
+            onClick={() => setStrokeColor(color)}
+            aria-label={`Set color ${color}`}
+            style={{ backgroundColor: color }}
+          />
         ))}
       </div>
       <div className={styles.divider} />
