@@ -5,7 +5,8 @@ export type PrimitiveType =
   | "rect"
   | "ellipse"
   | "arrow"
-  | "text";
+  | "text"
+  | "image";
 
 export type Point = {
   x: number;
@@ -86,10 +87,23 @@ export type TextPrimitive = {
   createdBy: string;
 };
 
+export type ImagePrimitive = {
+  id: string;
+  type: "image";
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  src: string;
+  rotation?: number;
+  createdBy: string;
+};
+
 export type Primitive =
   | StrokePrimitive
   | LinePrimitive
   | RectPrimitive
   | EllipsePrimitive
   | ArrowPrimitive
-  | TextPrimitive;
+  | TextPrimitive
+  | ImagePrimitive;

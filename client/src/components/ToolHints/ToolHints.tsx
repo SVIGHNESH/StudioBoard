@@ -13,7 +13,8 @@ export const ToolHints = () => {
     ellipse: "Drag to draw an ellipse",
     arrow: "Drag to draw an arrow",
     text: "Click to add editable text",
+    image: "Drop or upload an image",
   };
 
-  return <div className={styles.hint}>{hintMap[activeTool]}</div>;
+  return <div className={styles.hint}>{hintMap[activeTool] ?? ""}</div>;
 };

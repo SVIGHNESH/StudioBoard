@@ -1,4 +1,16 @@
-import type { Primitive, StrokePrimitive, TextPrimitive } from "shared/primitives";
+import type { Primitive, StrokePrimitive, TextPrimitive, ImagePrimitive } from "shared/primitives";
+
+const imageCache = new Map<string, HTMLImageElement>();
+
+const getCachedImage = (src: string) => {
+  const existing = imageCache.get(src);
+  if (existing) return existing;
+  const image = new Image();
+  image.crossOrigin = "anonymous";
+  image.src = src;
+  imageCache.set(src, image);
+  return image;
+};
 
 const drawStroke = (ctx: CanvasRenderingContext2D, primitive: StrokePrimitive) => {
   if (primitive.points.length < 2) return;
@@ -48,6 +60,27 @@ const drawText = (ctx: CanvasRenderingContext2D, primitive: TextPrimitive) => {
   ctx.translate(cx, cy);
   ctx.rotate(rotation);
   ctx.fillText(primitive.text, -primitive.width / 2, -primitive.height / 2, primitive.width);
+  ctx.restore();
+};
+
+const drawImage = (ctx: CanvasRenderingContext2D, primitive: ImagePrimitive) => {
+  const image = getCachedImage(primitive.src);
+  if (!image.complete) {
+    image.onload = () => {
+      ctx.canvas.dispatchEvent(new Event("imagereload"));
+    };
+    image.onerror = () => {
+      imageCache.delete(primitive.src);
+    };
+    return;
+  }
+  ctx.save();
+  const rotation = primitive.rotation ?? 0;
+  const cx = primitive.x + primitive.width / 2;
+  const cy = primitive.y + primitive.height / 2;
+  ctx.translate(cx, cy);
+  ctx.rotate(rotation);
+  ctx.drawImage(image, -primitive.width / 2, -primitive.height / 2, primitive.width, primitive.height);
   ctx.restore();
 };
 
@@ -108,6 +141,9 @@ export const renderPrimitive = (ctx: CanvasRenderingContext2D, primitive: Primit
       break;
     case "text":
       drawText(ctx, primitive);
+      break;
+    case "image":
+      drawImage(ctx, primitive);
       break;
     default:
       break;

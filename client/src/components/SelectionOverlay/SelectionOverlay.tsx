@@ -34,7 +34,7 @@ export const SelectionOverlay = ({ primitive, transform, onUpdate }: SelectionOv
     const onMove = (moveEvent: PointerEvent) => {
       const point = toCanvas(moveEvent.clientX, moveEvent.clientY, transform);
 
-      if (primitive.type === "rect") {
+      if (primitive.type === "rect" || primitive.type === "image") {
         const { x, y, width, height } = startData;
         let nextX = x;
         let nextY = y;
@@ -163,7 +163,7 @@ export const SelectionOverlay = ({ primitive, transform, onUpdate }: SelectionOv
     window.addEventListener("pointerup", onUp);
   };
 
-  if (primitive.type === "rect") {
+  if (primitive.type === "rect" || primitive.type === "image") {
     const topLeft = toScreen(primitive.x, primitive.y, transform);
     const width = primitive.width * transform.scale;
     const height = primitive.height * transform.scale;

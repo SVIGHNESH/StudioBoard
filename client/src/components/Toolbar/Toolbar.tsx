@@ -6,6 +6,7 @@ type ToolbarProps = {
   onUndo: () => void;
   onRedo: () => void;
   onExport: () => void;
+  onUploadImage: (file: File) => void;
 };
 
 const tools: { id: ToolType; label: string }[] = [
@@ -30,7 +31,7 @@ const toolIcons: Record<ToolType, string> = {
   text: "T",
 };
 
-export const Toolbar = ({ onUndo, onRedo, onExport }: ToolbarProps) => {
+export const Toolbar = ({ onUndo, onRedo, onExport, onUploadImage }: ToolbarProps) => {
   const { activeTool, setActiveTool, strokeColor, setStrokeColor } = useToolStore();
   const colors = ["#2C2926", "#E85D3D", "#1976D2", "#2E7D32", "#F6B24B", "#7B1FA2", "#6D4C41", "#00897B"];
   const isCustomColor = !colors.includes(strokeColor);
@@ -89,6 +90,20 @@ export const Toolbar = ({ onUndo, onRedo, onExport }: ToolbarProps) => {
         <button onClick={onExport} aria-label="Export PNG">
           Export
         </button>
+        <label className={styles.upload} aria-label="Upload image">
+          <span className={styles.icon}>🖼</span>
+          <span className={styles.label}>Image</span>
+          <input
+            type="file"
+            accept="image/*"
+            onChange={(event) => {
+              const file = event.target.files?.[0];
+              if (!file) return;
+              onUploadImage(file);
+              event.currentTarget.value = "";
+            }}
+          />
+        </label>
       </div>
     </div>
   );

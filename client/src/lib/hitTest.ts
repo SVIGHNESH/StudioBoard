@@ -34,6 +34,18 @@ export const hitTestPrimitive = (primitive: Primitive, x: number, y: number) => 
     const localY = dx * sin + dy * cos + cy;
     return localX >= primitive.x && localX <= primitive.x + primitive.width && localY >= primitive.y && localY <= primitive.y + primitive.height;
   }
+  if (primitive.type === "image") {
+    const rotation = primitive.rotation ?? 0;
+    const cx = primitive.x + primitive.width / 2;
+    const cy = primitive.y + primitive.height / 2;
+    const cos = Math.cos(-rotation);
+    const sin = Math.sin(-rotation);
+    const dx = x - cx;
+    const dy = y - cy;
+    const localX = dx * cos - dy * sin + cx;
+    const localY = dx * sin + dy * cos + cy;
+    return localX >= primitive.x && localX <= primitive.x + primitive.width && localY >= primitive.y && localY <= primitive.y + primitive.height;
+  }
   if (primitive.type === "ellipse") {
     const rotation = primitive.rotation ?? 0;
     const cos = Math.cos(-rotation);

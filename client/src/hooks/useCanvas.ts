@@ -98,6 +98,16 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
     redraw();
   }, [redraw]);
 
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const handleReload = () => redraw();
+    canvas.addEventListener("imagereload", handleReload as EventListener);
+    return () => {
+      canvas.removeEventListener("imagereload", handleReload as EventListener);
+    };
+  }, [redraw]);
+
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
     if (activeTool === "text") {
       event.preventDefault();
@@ -170,7 +180,7 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
         setSelectedId(hit.id);
         setSelectedTextId(hit.type === "text" ? hit.id : null);
         setDragTextId(hit.id);
-        if (hit.type === "rect" || hit.type === "text") {
+        if (hit.type === "rect" || hit.type === "text" || hit.type === "image") {
           setDragOffset({ x: point.x - hit.x, y: point.y - hit.y });
         } else if (hit.type === "ellipse") {
           setDragOffset({ x: point.x - hit.cx, y: point.y - hit.cy });
@@ -316,7 +326,7 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
             x: point.x - dragOffset.x,
             y: point.y - dragOffset.y,
           });
-        } else if (item.type === "rect") {
+        } else if (item.type === "rect" || item.type === "image") {
           onUpdatePrimitive(item.id, {
             x: point.x - dragOffset.x,
             y: point.y - dragOffset.y,
