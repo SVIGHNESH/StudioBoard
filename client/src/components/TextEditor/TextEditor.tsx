@@ -138,12 +138,12 @@ export const TextEditor = ({ primitive, isSelected, transform, onChange, onCommi
     window.addEventListener("pointerup", onUp);
   };
 
-  const handleInput = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const value = event.target.value;
+  const handleInput = (event: React.FormEvent<HTMLTextAreaElement>) => {
     const minWidth = 120;
     const minHeight = 40;
-    const nextWidth = Math.max(minWidth, event.target.scrollWidth / scale);
-    const nextHeight = Math.max(minHeight, event.target.scrollHeight / scale);
+    const target = event.currentTarget;
+    const nextWidth = Math.max(minWidth, target.scrollWidth / scale);
+    const nextHeight = Math.max(minHeight, target.scrollHeight / scale);
     onChange(primitive.id, { width: nextWidth, height: nextHeight });
   };
 

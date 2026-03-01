@@ -160,7 +160,7 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
 
     const point = toCanvasPoint(event.clientX, event.clientY);
 
-    if (selectedTextId && activeTool !== "text" && activeTool !== "select") {
+    if (selectedTextId && activeTool !== "select") {
       setSelectedTextId(null);
     }
 
