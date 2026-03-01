@@ -21,6 +21,15 @@ function App() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    const keepAlive = () => {
+      fetch(`${serverUrl}/health`).catch(() => null);
+    };
+    keepAlive();
+    const interval = window.setInterval(keepAlive, 60000);
+    return () => window.clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
     const init = async () => {
       const url = new URL(window.location.href);
       const existing = url.pathname.split("/").filter(Boolean)[0];
