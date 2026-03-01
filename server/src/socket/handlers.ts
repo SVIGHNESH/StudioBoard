@@ -73,7 +73,7 @@ export const registerSocketHandlers = (io: Server) => {
       const stored = { ...primitive, deleted_at: null };
       primitivesMap.set(primitive.id, stored);
       
-      undoManager.recordCreate(boardId, primitive.createdBy, stored.id);
+      undoManager.recordCreate(boardId, stored.id);
       io.to(boardId).emit(SOCKET_EVENTS.PRIMITIVE_CREATED, stored);
     });
 
@@ -85,7 +85,10 @@ export const registerSocketHandlers = (io: Server) => {
       const primitivesMap = getPrimitivesForBoard(boardId);
       const existing = primitivesMap.get(payload.id);
       if (existing) {
+        const before = { ...existing } as Primitive;
         Object.assign(existing, payload.changes);
+        const after = { ...existing } as Primitive;
+        undoManager.recordUpdate(boardId, payload.id, before, after);
         io.to(boardId).emit(SOCKET_EVENTS.PRIMITIVE_UPDATED, payload);
       }
     });
@@ -98,6 +101,8 @@ export const registerSocketHandlers = (io: Server) => {
       const primitivesMap = getPrimitivesForBoard(boardId);
       const existing = primitivesMap.get(payload.id);
       if (existing) {
+        const snapshot = { ...existing } as Primitive;
+        undoManager.recordDelete(boardId, snapshot);
         existing.deleted_at = new Date().toISOString();
         primitivesMap.set(payload.id, existing);
       }
@@ -147,40 +152,81 @@ export const registerSocketHandlers = (io: Server) => {
 
     socket.on(SOCKET_EVENTS.UNDO, () => {
       const boardId = socket.data.boardId as string | undefined;
-      const user = getSocketUser(socket);
-      if (!boardId || !user) return;
+      if (!boardId) return;
 
-      const primitiveId = undoManager.undo(boardId, user.sessionId);
-      if (!primitiveId) return;
+      const action = undoManager.undo(boardId);
+      if (!action) return;
 
-      // In-memory: soft delete the primitive
       const primitivesMap = getPrimitivesForBoard(boardId);
-      const existing = primitivesMap.get(primitiveId);
-      if (existing) {
-        existing.deleted_at = new Date().toISOString();
-        primitivesMap.set(primitiveId, existing);
+      if (action.type === "create") {
+        const existing = primitivesMap.get(action.id);
+        if (existing) {
+          existing.deleted_at = new Date().toISOString();
+          primitivesMap.set(action.id, existing);
+        }
+        io.to(boardId).emit(SOCKET_EVENTS.PRIMITIVE_DELETED, { id: action.id });
       }
-      io.to(boardId).emit(SOCKET_EVENTS.PRIMITIVE_DELETED, { id: primitiveId });
-      io.to(boardId).emit("undo:applied", { primitiveId, action: "delete" });
+
+      if (action.type === "delete") {
+        const restored = { ...action.snapshot, deleted_at: null } as StoredPrimitive;
+        primitivesMap.set(action.snapshot.id, restored);
+        io.to(boardId).emit(SOCKET_EVENTS.PRIMITIVE_CREATED, restored);
+      }
+
+      if (action.type === "update") {
+        const existing = primitivesMap.get(action.id);
+        if (existing) {
+          Object.assign(existing, action.before, { deleted_at: existing.deleted_at ?? null });
+          primitivesMap.set(action.id, existing);
+        } else {
+          primitivesMap.set(action.id, { ...action.before, deleted_at: null } as StoredPrimitive);
+        }
+        io.to(boardId).emit(SOCKET_EVENTS.PRIMITIVE_UPDATED, {
+          id: action.id,
+          changes: action.before,
+        });
+      }
     });
 
     socket.on(SOCKET_EVENTS.REDO, () => {
       const boardId = socket.data.boardId as string | undefined;
-      const user = getSocketUser(socket);
-      if (!boardId || !user) return;
+      if (!boardId) return;
 
-      const primitiveId = undoManager.redo(boardId, user.sessionId);
-      if (!primitiveId) return;
+      const action = undoManager.redo(boardId);
+      if (!action) return;
 
-      // In-memory: restore the primitive
       const primitivesMap = getPrimitivesForBoard(boardId);
-      const existing = primitivesMap.get(primitiveId);
-      if (existing) {
-        existing.deleted_at = null;
-        primitivesMap.set(primitiveId, existing);
-        io.to(boardId).emit(SOCKET_EVENTS.PRIMITIVE_CREATED, existing);
+      if (action.type === "create") {
+        const existing = primitivesMap.get(action.id);
+        if (existing) {
+          existing.deleted_at = null;
+          primitivesMap.set(action.id, existing);
+          io.to(boardId).emit(SOCKET_EVENTS.PRIMITIVE_CREATED, existing);
+        }
       }
-      io.to(boardId).emit("redo:applied", { primitiveId, action: "restore" });
+
+      if (action.type === "delete") {
+        const existing = primitivesMap.get(action.snapshot.id);
+        if (existing) {
+          existing.deleted_at = new Date().toISOString();
+          primitivesMap.set(action.snapshot.id, existing);
+        }
+        io.to(boardId).emit(SOCKET_EVENTS.PRIMITIVE_DELETED, { id: action.snapshot.id });
+      }
+
+      if (action.type === "update") {
+        const existing = primitivesMap.get(action.id);
+        if (existing) {
+          Object.assign(existing, action.after, { deleted_at: existing.deleted_at ?? null });
+          primitivesMap.set(action.id, existing);
+        } else {
+          primitivesMap.set(action.id, { ...action.after, deleted_at: null } as StoredPrimitive);
+        }
+        io.to(boardId).emit(SOCKET_EVENTS.PRIMITIVE_UPDATED, {
+          id: action.id,
+          changes: action.after,
+        });
+      }
     });
 
     socket.on("disconnect", () => {

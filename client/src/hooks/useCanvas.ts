@@ -99,6 +99,34 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
   }, [redraw]);
 
   const handlePointerDown = (event: React.PointerEvent<HTMLCanvasElement>) => {
+    if (activeTool === "text") {
+      event.preventDefault();
+      event.stopPropagation();
+      const point = toCanvasPoint(event.clientX, event.clientY);
+      if (selectedTextId) {
+        setSelectedTextId(null);
+      }
+      const primitive: TextPrimitive = {
+        id: createId(),
+        type: "text",
+        x: point.x,
+        y: point.y,
+        width: 180,
+        height: 40,
+        text: "",
+        fontSize: 18,
+        fontFamily: "IBM Plex Sans",
+        color: strokeColor,
+        align: "left",
+        rotation: 0,
+        createdBy: sessionId,
+      };
+      onCreatePrimitive(primitive);
+      setSelectedTextId(primitive.id);
+      setDraftPrimitive(primitive);
+      setIsDrawing(false);
+      return;
+    }
     event.currentTarget.setPointerCapture(event.pointerId);
     if (event.pointerType === "touch") {
       activePointers.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
@@ -168,32 +196,6 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
         setLastEraseId(hit.id);
       }
       setIsDrawing(true);
-      return;
-    }
-
-    if (activeTool === "text") {
-      if (selectedTextId) {
-        setSelectedTextId(null);
-      }
-      const primitive: TextPrimitive = {
-        id: createId(),
-        type: "text",
-        x: point.x,
-        y: point.y,
-        width: 180,
-        height: 40,
-        text: "",
-        fontSize: 18,
-        fontFamily: "IBM Plex Sans",
-        color: strokeColor,
-        align: "left",
-        rotation: 0,
-        createdBy: sessionId,
-      };
-      onCreatePrimitive(primitive);
-      setSelectedTextId(primitive.id);
-      setDraftPrimitive(primitive);
-      setIsDrawing(false);
       return;
     }
 
