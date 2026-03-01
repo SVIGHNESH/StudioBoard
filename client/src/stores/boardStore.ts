@@ -19,7 +19,13 @@ export const useBoardStore = create<BoardState>((set) => ({
   users: [],
   setPrimitives: (primitives) => set({ primitives }),
   addPrimitive: (primitive) =>
-    set((state) => ({ primitives: [...state.primitives, primitive] })),
+    set((state) => {
+      const exists = state.primitives.some((item) => item.id === primitive.id);
+      if (exists) {
+        return state;
+      }
+      return { primitives: [...state.primitives, primitive] };
+    }),
   updatePrimitive: (id, changes) =>
     set((state) => ({
       primitives: state.primitives.map((primitive) =>

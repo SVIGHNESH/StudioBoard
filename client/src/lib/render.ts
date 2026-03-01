@@ -117,10 +117,12 @@ export const renderPrimitive = (ctx: CanvasRenderingContext2D, primitive: Primit
 export const renderScene = (
   ctx: CanvasRenderingContext2D,
   primitives: Primitive[],
-  transform: { scale: number; offsetX: number; offsetY: number }
+  transform: { scale: number; offsetX: number; offsetY: number },
+  pixelRatio = 1
 ) => {
   ctx.save();
-  ctx.setTransform(transform.scale, 0, 0, transform.scale, transform.offsetX, transform.offsetY);
+  const scale = transform.scale * pixelRatio;
+  ctx.setTransform(scale, 0, 0, scale, transform.offsetX * pixelRatio, transform.offsetY * pixelRatio);
   primitives.forEach((primitive) => renderPrimitive(ctx, primitive));
   ctx.restore();
 };

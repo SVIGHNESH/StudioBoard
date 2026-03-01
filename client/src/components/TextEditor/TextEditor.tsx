@@ -16,6 +16,13 @@ export const TextEditor = ({ primitive, isSelected, transform, onChange, onCommi
   const [isEditing, setIsEditing] = useState(false);
   const debouncedValue = useDebouncedValue(value, 250);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const wrapperRef = useRef<HTMLDivElement | null>(null);
+  const latestValueRef = useRef(value);
+  const committedRef = useRef(false);
+  const onChangeRef = useRef(onChange);
+  const onCommitRef = useRef(onCommit);
+  const primitiveIdRef = useRef(primitive.id);
+  const primitiveTextRef = useRef(primitive.text);
 
   const scale = transform.scale;
   const left = primitive.x * scale + transform.offsetX;
@@ -28,6 +35,17 @@ export const TextEditor = ({ primitive, isSelected, transform, onChange, onCommi
       setValue(primitive.text);
     }
   }, [isEditing, primitive.text]);
+
+  useEffect(() => {
+    onChangeRef.current = onChange;
+    onCommitRef.current = onCommit;
+    primitiveIdRef.current = primitive.id;
+    primitiveTextRef.current = primitive.text;
+  }, [onChange, onCommit, primitive.id, primitive.text]);
+
+  useEffect(() => {
+    latestValueRef.current = value;
+  }, [value]);
 
   useEffect(() => {
     if (isSelected) {
@@ -45,19 +63,47 @@ export const TextEditor = ({ primitive, isSelected, transform, onChange, onCommi
   }, [debouncedValue, isEditing, onChange, primitive.id, primitive.text]);
 
   useEffect(() => {
-    if (isSelected) {
+    if (!isSelected) return;
+    const frame = window.requestAnimationFrame(() => {
       textareaRef.current?.focus();
-    }
+    });
+    return () => window.cancelAnimationFrame(frame);
   }, [isSelected]);
 
   const handleBlur = () => {
     if (!isSelected) return;
     setIsEditing(false);
+    committedRef.current = true;
     if (value !== primitive.text) {
       onChange(primitive.id, { text: value });
     }
     onCommit(primitive.id);
   };
+
+  useEffect(() => {
+    const handlePointerDown = (event: PointerEvent) => {
+      const target = event.target as Node | null;
+      if (!target || wrapperRef.current?.contains(target)) {
+        return;
+      }
+      if (!isSelected || committedRef.current) {
+        return;
+      }
+      const nextValue = latestValueRef.current;
+      const currentId = primitiveIdRef.current;
+      committedRef.current = true;
+      setIsEditing(false);
+      if (nextValue !== primitiveTextRef.current) {
+        onChangeRef.current(currentId, { text: nextValue });
+      }
+      onCommitRef.current(currentId);
+    };
+
+    window.addEventListener("pointerdown", handlePointerDown, false);
+    return () => {
+      window.removeEventListener("pointerdown", handlePointerDown, false);
+    };
+  }, [isSelected]);
 
   const handleResize = (event: React.PointerEvent<HTMLDivElement>, corner: string) => {
     event.stopPropagation();
@@ -104,6 +150,7 @@ export const TextEditor = ({ primitive, isSelected, transform, onChange, onCommi
   return (
     <div
       className={styles.wrapper}
+      ref={wrapperRef}
       style={{
         transform: `translate(${left}px, ${top}px) rotate(${primitive.rotation ?? 0}rad)`,
         transformOrigin: "top left",

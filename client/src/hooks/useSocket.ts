@@ -76,6 +76,7 @@ export const useSocket = (boardId: string) => {
   }, [boardId, sessionId, name, color, socket, setPrimitives, addPrimitive, updatePrimitive, removePrimitive, setUsers, upsertUser, removeUser]);
 
   const emitPrimitive = (primitive: Primitive) => {
+    addPrimitive(primitive);
     socket.emit(SOCKET_EVENTS.PRIMITIVE_CREATE, primitive);
   };
 

@@ -22,6 +22,7 @@ export const Canvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimitive
   const {
     canvasRef,
     containerRef,
+    draftPrimitive,
     selectedId,
     selectedTextId,
     setSelectedTextId,
@@ -94,25 +95,30 @@ export const Canvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimitive
         onPointerLeave={(event) => handlePointerUp(event)}
         onWheel={handleWheel}
       />
-      {selectedTextId &&
-        textPrimitives
-          .filter((primitive) => primitive.id === selectedTextId)
-          .map((primitive) => (
-            <TextEditor
-              key={primitive.id}
-              primitive={primitive}
-              isSelected={true}
-              transform={transform}
-              onChange={onUpdatePrimitive}
-              onCommit={(id) => {
-                setSelectedTextId(null);
-                onUpdatePrimitive(id, {});
-              }}
-            />
-          ))}
+      {(() => {
+        const activeText =
+          textPrimitives.find((primitive) => primitive.id === selectedTextId) ||
+          (draftPrimitive?.type === "text" ? draftPrimitive : null);
+        if (!activeText) return null;
+        return (
+          <TextEditor
+            key={activeText.id}
+            primitive={activeText}
+            isSelected={true}
+            transform={transform}
+            onChange={onUpdatePrimitive}
+            onCommit={(id) => {
+              setSelectedTextId(null);
+              setDraftPrimitive(null);
+              onUpdatePrimitive(id, {});
+            }}
+          />
+        );
+      })()}
       {selectedPrimitive && activeTool === "select" && (
         <SelectionOverlay primitive={selectedPrimitive} transform={transform} onUpdate={onUpdatePrimitive} />
       )}
+      <div className={styles.madeBy}>Made by VIGHNESH SHUKLA with 💚</div>
     </div>
   );
 };

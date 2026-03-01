@@ -66,13 +66,14 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
     if (!canvas) return;
     const ctx = canvas.getContext("2d");
     if (!ctx) return;
+    const pixelRatio = window.devicePixelRatio || 1;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const primitivesForRender = selectedTextId
       ? primitives.filter((primitive) => !(primitive.type === "text" && primitive.id === selectedTextId))
       : primitives;
-    renderScene(ctx, primitivesForRender, transform);
-    if (draftPrimitive) {
-      renderScene(ctx, [draftPrimitive], transform);
+    renderScene(ctx, primitivesForRender, transform, pixelRatio);
+    if (draftPrimitive && draftPrimitive.type !== "text") {
+      renderScene(ctx, [draftPrimitive], transform, pixelRatio);
     }
   }, [primitives, transform, draftPrimitive, selectedTextId]);
 
@@ -81,12 +82,9 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
     const container = containerRef.current;
     if (!canvas || !container) return;
     const rect = container.getBoundingClientRect();
-    canvas.width = rect.width * window.devicePixelRatio;
-    canvas.height = rect.height * window.devicePixelRatio;
-    const ctx = canvas.getContext("2d");
-    if (ctx) {
-      ctx.setTransform(window.devicePixelRatio, 0, 0, window.devicePixelRatio, 0, 0);
-    }
+    const pixelRatio = window.devicePixelRatio || 1;
+    canvas.width = rect.width * pixelRatio;
+    canvas.height = rect.height * pixelRatio;
     redraw();
   }, [redraw]);
 
@@ -176,7 +174,6 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
     if (activeTool === "text") {
       if (selectedTextId) {
         setSelectedTextId(null);
-        return;
       }
       const primitive: TextPrimitive = {
         id: createId(),
@@ -195,8 +192,8 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
       };
       onCreatePrimitive(primitive);
       setSelectedTextId(primitive.id);
+      setDraftPrimitive(primitive);
       setIsDrawing(false);
-      setDraftPrimitive(null);
       return;
     }
 
@@ -457,6 +454,7 @@ export const useCanvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimit
     canvasRef,
     containerRef,
     transform,
+    draftPrimitive,
     selectedId,
     selectedTextId,
     setSelectedTextId,
