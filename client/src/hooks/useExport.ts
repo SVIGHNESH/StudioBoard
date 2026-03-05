@@ -48,6 +48,12 @@ const getBounds = (primitives: Primitive[]) => {
         maxX = Math.max(maxX, primitive.x + primitive.width);
         maxY = Math.max(maxY, primitive.y + primitive.height);
         break;
+      case "shape3d":
+        minX = Math.min(minX, primitive.position.x - primitive.size.x / 2);
+        minY = Math.min(minY, primitive.position.y - primitive.size.y / 2);
+        maxX = Math.max(maxX, primitive.position.x + primitive.size.x / 2);
+        maxY = Math.max(maxY, primitive.position.y + primitive.size.y / 2);
+        break;
       default:
         break;
     }

@@ -5,6 +5,7 @@ import { useToolStore } from "../../stores/toolStore";
 import type { Primitive } from "shared/primitives";
 import { TextEditor } from "../TextEditor/TextEditor";
 import { SelectionOverlay } from "../SelectionOverlay/SelectionOverlay";
+import { Canvas3D } from "../Canvas3D/Canvas3D";
 import styles from "./Canvas.module.css";
 
 type CanvasProps = {
@@ -95,6 +96,7 @@ export const Canvas = ({ onCreatePrimitive, onUpdatePrimitive, onDeletePrimitive
         onPointerLeave={(event) => handlePointerUp(event)}
         onWheel={handleWheel}
       />
+      <Canvas3D transform={transform} />
       {(() => {
         const activeText =
           textPrimitives.find((primitive) => primitive.id === selectedTextId) ||

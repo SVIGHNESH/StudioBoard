@@ -145,6 +145,8 @@ export const renderPrimitive = (ctx: CanvasRenderingContext2D, primitive: Primit
     case "image":
       drawImage(ctx, primitive);
       break;
+    case "shape3d":
+      break;
     default:
       break;
   }

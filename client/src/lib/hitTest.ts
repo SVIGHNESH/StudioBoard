@@ -56,6 +56,16 @@ export const hitTestPrimitive = (primitive: Primitive, x: number, y: number) => 
     const localY = (dx * sin + dy * cos) / primitive.ry;
     return localX * localX + localY * localY <= 1;
   }
+  if (primitive.type === "shape3d") {
+    const halfX = primitive.size.x / 2;
+    const halfY = primitive.size.y / 2;
+    return (
+      x >= primitive.position.x - halfX &&
+      x <= primitive.position.x + halfX &&
+      y >= primitive.position.y - halfY &&
+      y <= primitive.position.y + halfY
+    );
+  }
   if (primitive.type === "line" || primitive.type === "arrow") {
     const distance = Math.abs(
       (primitive.end.y - primitive.start.y) * x -

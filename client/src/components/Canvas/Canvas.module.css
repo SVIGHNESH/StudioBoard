@@ -13,7 +13,7 @@
     linear-gradient(90deg, var(--grid-line-major) 1px, transparent 1px);
   opacity: 0.6;
   pointer-events: none;
-  z-index: 1;
+  z-index: 0;
 }
 
 .canvas {
@@ -22,7 +22,7 @@
   cursor: var(--cursor, crosshair);
   display: block;
   position: relative;
-  z-index: 2;
+  z-index: 4;
   touch-action: none;
 }
 

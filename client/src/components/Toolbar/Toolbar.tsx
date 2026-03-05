@@ -32,7 +32,7 @@ const toolIcons: Record<ToolType, string> = {
 };
 
 export const Toolbar = ({ onUndo, onRedo, onExport, onUploadImage }: ToolbarProps) => {
-  const { activeTool, setActiveTool, strokeColor, setStrokeColor } = useToolStore();
+  const { activeTool, setActiveTool, strokeColor, setStrokeColor, auto3dEnabled, setAuto3dEnabled } = useToolStore();
   const colors = ["#2C2926", "#E85D3D", "#1976D2", "#2E7D32", "#F6B24B", "#7B1FA2", "#6D4C41", "#00897B"];
   const isCustomColor = !colors.includes(strokeColor);
 
@@ -84,6 +84,17 @@ export const Toolbar = ({ onUndo, onRedo, onExport, onUploadImage }: ToolbarProp
             aria-label="Choose custom color"
           />
         </label>
+      </div>
+      <div className={styles.divider} />
+      <div className={styles.group}>
+        <button
+          data-active={auto3dEnabled}
+          onClick={() => setAuto3dEnabled(!auto3dEnabled)}
+          aria-label="Toggle auto 3D conversion"
+        >
+          <span className={styles.icon}>3D</span>
+          <span className={styles.label}>Auto</span>
+        </button>
       </div>
       <div className={styles.divider} />
       <div className={styles.group}>

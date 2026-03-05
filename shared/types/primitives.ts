@@ -6,7 +6,8 @@ export type PrimitiveType =
   | "ellipse"
   | "arrow"
   | "text"
-  | "image";
+  | "image"
+  | "shape3d";
 
 export type Point = {
   x: number;
@@ -99,6 +100,17 @@ export type ImagePrimitive = {
   createdBy: string;
 };
 
+export type Shape3DPrimitive = {
+  id: string;
+  type: "shape3d";
+  shape: "sphere" | "cube" | "cylinder" | "cone" | "pyramid";
+  position: { x: number; y: number; z: number };
+  size: { x: number; y: number; z: number };
+  rotation: { x: number; y: number; z: number };
+  color: string;
+  createdBy: string;
+};
+
 export type Primitive =
   | StrokePrimitive
   | LinePrimitive
@@ -106,4 +118,5 @@ export type Primitive =
   | EllipsePrimitive
   | ArrowPrimitive
   | TextPrimitive
-  | ImagePrimitive;
+  | ImagePrimitive
+  | Shape3DPrimitive;

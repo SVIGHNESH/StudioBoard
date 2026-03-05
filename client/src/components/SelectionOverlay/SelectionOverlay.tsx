@@ -72,6 +72,48 @@ export const SelectionOverlay = ({ primitive, transform, onUpdate }: SelectionOv
         onUpdate(primitive.id, { x: nextX, y: nextY, width: nextW, height: nextH });
       }
 
+      if (primitive.type === "shape3d") {
+        const { x, y, width, height } = startData;
+        let nextX = x;
+        let nextY = y;
+        let nextW = width;
+        let nextH = height;
+
+        if (handle.includes("left")) {
+          nextX = point.x;
+          nextW = x + width - point.x;
+        }
+        if (handle.includes("right")) {
+          nextW = point.x - x;
+        }
+        if (handle.includes("top")) {
+          nextY = point.y;
+          nextH = y + height - point.y;
+        }
+        if (handle.includes("bottom")) {
+          nextH = point.y - y;
+        }
+
+        if (nextW < minSize) {
+          nextW = minSize;
+          if (handle.includes("left")) {
+            nextX = x + width - minSize;
+          }
+        }
+        if (nextH < minSize) {
+          nextH = minSize;
+          if (handle.includes("top")) {
+            nextY = y + height - minSize;
+          }
+        }
+
+        const depth = primitive.shape === "cylinder" ? nextW : Math.max(nextW, nextH);
+        onUpdate(primitive.id, {
+          position: { ...primitive.position, x: nextX + nextW / 2, y: nextY + nextH / 2 },
+          size: { ...primitive.size, x: nextW, y: nextH, z: depth },
+        });
+      }
+
       if (primitive.type === "ellipse") {
         const { x, y, width, height } = startData;
         let nextX = x;
@@ -192,6 +234,37 @@ export const SelectionOverlay = ({ primitive, transform, onUpdate }: SelectionOv
                 y: primitive.y,
                 width: primitive.width,
                 height: primitive.height,
+              })
+            }
+          />
+        ))}
+      </div>
+    );
+  }
+
+  if (primitive.type === "shape3d") {
+    const topLeft = toScreen(primitive.position.x - primitive.size.x / 2, primitive.position.y - primitive.size.y / 2, transform);
+    const width = primitive.size.x * transform.scale;
+    const height = primitive.size.y * transform.scale;
+    return (
+      <div className={styles.overlay}>
+        <div className={styles.outline} style={{ left: topLeft.x, top: topLeft.y, width, height }} />
+        {[
+          { key: "top-left", x: topLeft.x, y: topLeft.y },
+          { key: "top-right", x: topLeft.x + width, y: topLeft.y },
+          { key: "bottom-left", x: topLeft.x, y: topLeft.y + height },
+          { key: "bottom-right", x: topLeft.x + width, y: topLeft.y + height },
+        ].map((handle) => (
+          <div
+            key={handle.key}
+            className={styles.handle}
+            style={{ left: handle.x, top: handle.y }}
+            onPointerDown={(event) =>
+              startResize(event, handle.key, {
+                x: primitive.position.x - primitive.size.x / 2,
+                y: primitive.position.y - primitive.size.y / 2,
+                width: primitive.size.x,
+                height: primitive.size.y,
               })
             }
           />
