@@ -78,11 +78,11 @@ export const Canvas3D = ({ transform }: Canvas3DProps) => {
 
     return () => {
       meshesRef.current.forEach((group) => {
-        group.traverse((child) => {
+        group.traverse((child: THREE.Object3D) => {
           if (child instanceof THREE.Mesh) {
             child.geometry.dispose();
             if (Array.isArray(child.material)) {
-              child.material.forEach((material) => material.dispose());
+              child.material.forEach((material: THREE.Material) => material.dispose());
             } else {
               child.material.dispose();
             }
@@ -90,7 +90,7 @@ export const Canvas3D = ({ transform }: Canvas3DProps) => {
           if (child instanceof THREE.LineSegments) {
             child.geometry.dispose();
             if (Array.isArray(child.material)) {
-              child.material.forEach((material) => material.dispose());
+              child.material.forEach((material: THREE.Material) => material.dispose());
             } else {
               child.material.dispose();
             }
@@ -139,11 +139,11 @@ export const Canvas3D = ({ transform }: Canvas3DProps) => {
 
     meshesRef.current.forEach((group) => {
       scene.remove(group);
-      group.traverse((child) => {
+      group.traverse((child: THREE.Object3D) => {
         if (child instanceof THREE.Mesh) {
           child.geometry.dispose();
           if (Array.isArray(child.material)) {
-            child.material.forEach((material) => material.dispose());
+            child.material.forEach((material: THREE.Material) => material.dispose());
           } else {
             child.material.dispose();
           }
@@ -151,7 +151,7 @@ export const Canvas3D = ({ transform }: Canvas3DProps) => {
         if (child instanceof THREE.LineSegments) {
           child.geometry.dispose();
           if (Array.isArray(child.material)) {
-            child.material.forEach((material) => material.dispose());
+            child.material.forEach((material: THREE.Material) => material.dispose());
           } else {
             child.material.dispose();
           }
