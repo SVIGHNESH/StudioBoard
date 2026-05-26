@@ -41,6 +41,10 @@ Server runs at `http://localhost:3001`, client at `http://localhost:5173`.
 npm run build
 ```
 
+## Motivation
+
+Studio Board was built to explore what it takes to make real-time collaboration feel instant. Most whiteboard tools either feel laggy under multi-user load or hide their sync model behind a heavy framework — this project is an attempt to build a lean, transparent stack (Socket.IO + a shared primitive model + global undo/redo) where the collaboration mechanics are easy to read, easy to extend, and fast enough to be genuinely useful for brainstorming, teaching, and remote design reviews.
+
 ## Architecture
 
 - Client (Vite + React) renders the canvas, handles tools, and manages local state.
