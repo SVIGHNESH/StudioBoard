@@ -60,6 +60,19 @@ Studio Board was built to explore what it takes to make real-time collaboration 
 - Image upload (button or drag/drop) with resize/rotate/select support.
 - Export board to PNG with optional grid.
 
+## Usage
+
+1. Start the app with `npm run dev` and open `http://localhost:5173` in your browser.
+2. Share the URL with collaborators — every connected client joins the same board and sees live cursors and presence in real time.
+3. Pick a tool from the toolbar:
+   - **Select** — click to select, drag to move, use handles to resize/rotate.
+   - **Pen** — freehand draw.
+   - **Line / Arrow / Rect / Ellipse** — click and drag to create.
+   - **Text** — click to place a text box and type.
+4. Add images via the upload button or by drag-and-dropping a file onto the canvas. Images are downscaled client-side to stay under 1MB.
+5. Use **Undo/Redo** (or `Ctrl/Cmd+Z` / `Ctrl/Cmd+Shift+Z`) — history is global, so undo affects the latest action across all users.
+6. Export the board to PNG from the toolbar; toggle the grid before exporting if you want it baked into the image.
+
 ## Contributing
 
 Contributions are welcome. Studio Board has three workspaces (`client`, `server`, `shared`) and changes often touch more than one — please keep them in sync.
