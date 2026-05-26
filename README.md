@@ -56,6 +56,22 @@ npm run build
 - Image upload (button or drag/drop) with resize/rotate/select support.
 - Export board to PNG with optional grid.
 
+## Contributing
+
+Contributions are welcome. Studio Board has three workspaces (`client`, `server`, `shared`) and changes often touch more than one — please keep them in sync.
+
+1. Fork the repo and create a feature branch off `main` (`feat/<short-name>` or `fix/<short-name>`).
+2. Install all workspaces (`npm --prefix client install && npm --prefix server install && npm --prefix shared install`) and verify `npm run dev` brings up both client and server cleanly.
+3. If you add or change a primitive, tool, or socket event:
+   - Update the types in `shared/` first so client and server stay aligned.
+   - Emit and handle events on both sides; preserve the global undo/redo contract.
+4. Test multi-user behavior with at least two browser windows — verify live cursors, presence, and undo/redo across clients before opening a PR.
+5. For image upload changes, confirm the 1MB downscale path and that uploads still serve correctly from `/uploads`.
+6. Run `npm run build` in each workspace and make sure there are no type errors.
+7. Open a PR describing the change, the tools/events affected, and how you tested it. Screenshots or short clips help for canvas-visible changes.
+
+Please avoid committing `server/uploads/` contents, local `.env` files, or build output.
+
 ## Notes
 
 - Images are uploaded to `server/uploads` and served from `/uploads`.
