@@ -5,6 +5,7 @@ Plan.md
 .env
 .env.local
 .env.*.local
+.env~
 
 # Build output
 dist/
